@@ -1,23 +1,29 @@
 // my ESP board is an 2AC7Z-ESPWROOM32
 // This version working, but the power calculation may need some improvement.
-// is the idea ported from 'sketch_cycle_tst_cad_whl_apr30a.ino' using the Cycle Power BLE Service
+// the idea is ported from 'sketch_cycle_tst_cad_whl_apr30a.ino' using the Cycle Power BLE Service
 // 
+// This code creates a (virtual) BLE Power Sensor from a simple wheel sensor.
+// By using an fixed amount of energy per wheel revolution we calculate the Power in watts and broadcast them over BLE.
+// feel free to improve the calculations, this was good enough for me. ;-)
+//
+// This program will put the ESP32 into deep sleep mode when the wheel sensor is idle over 180 seconds (SLEEP_AFTER_MILLIS).
+// sensing any change on the wheel sensor will wake-up the ESP32 from deep sleep.
+//
 
 #include "Arduino.h"
 /* For the bluetooth funcionality */
 #include <ArduinoBLE.h>
-// #include <CurieBLE.h>
 
 /* Device name which can be scene in BLE scanning software. */
-#define BLE_DEVICE_NAME               "Diederiksbike"
+#define BLE_DEVICE_NAME               "Diederik's bike"
 /* Local name which should pop up when scanning for BLE devices. */
 #define BLE_LOCAL_NAME                "Cycle Power BLE"
 
-// old , to be removed
-// BLEService cscService("1816");                          // cscService = CycleSpeedCadenceService
-// BLECharacteristic cscChar("2A5B", BLENotify, 11); // cscChar = CycleSpeedCadenceService
-// BLECharacteristic cscFtr("2A5C", BLERead, 1);         // cscFtr = CycleSpeedCadenceFeature
-// BLECharacteristic cscSL("2A5D", BLERead, 1);  // cscSL = CycleSpeedCadenceSensorLocation
+#define PIN_LED GPIO_NUM_2            // BLE indicator LED, GPIO_NUM_2 is onboard red LED ESP32WROOM.
+#define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
+#define SLEEP_AFTER_MILLIS 180 * 1000 // deep sleep timer in milliseconds. Using 3 minutes.
+
+/* better not change anything below here, unless you know what you're doing */
 
 BLEService CyclePowerService("1818");
 BLECharacteristic CyclePowerFeature("2A65", BLERead, 4);
@@ -29,11 +35,6 @@ unsigned char bleBuffer[10]; // 16bit flag, sint16 power , uint32 wheel_revoluti
 unsigned char slBuffer[1];
 unsigned char fBuffer[4];
 
-#define SLEEP_AFTER_MILLIS 180 * 1000  // deep sleep timer in milliseconds.
-
-
-#define PIN_LED GPIO_NUM_2            // onboard red LED ESP32WROOM
-#define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; 3rd pin on BOOT btn side
 
 volatile unsigned long previousMillis = 0;
 volatile unsigned long lastMillis = 0;
@@ -191,7 +192,7 @@ float current_power() {
     return current_power;
   }
 
-  // we get 0.033 cal per wheel revelution
+  // we get 0.033 cal per wheel revolution
   // 1 cal per seconds = 4.18400 Watt
   // 1000 / wheel_rev_time * cal_per_whlrev(=30~) * to_watt(4.184)
   // return 1000 / wheel_rev_time * 120;
