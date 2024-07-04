@@ -14,12 +14,12 @@
 /* For the bluetooth funcionality */
 #include <ArduinoBLE.h>
 
-/* Device name which can be scene in BLE scanning software. */
+/* Device name which can be seen in BLE scanning software. */
 #define BLE_DEVICE_NAME               "Diederik's bike"
 /* Local name which should pop up when scanning for BLE devices. */
 #define BLE_LOCAL_NAME                "Cycle Power BLE"
 
-#define PIN_LED GPIO_NUM_2            // BLE indicator LED, GPIO_NUM_2 is onboard red LED ESP32WROOM.
+#define PIN_LED GPIO_NUM_2            // BLE pairing LED indicator; GPIO_NUM_2 is an onboard LED on my ESP32WROOM.
 #define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
 #define SLEEP_AFTER_MILLIS 180 * 1000 // deep sleep timer in milliseconds. Using 3 minutes.
 
