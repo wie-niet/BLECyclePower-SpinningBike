@@ -29,16 +29,17 @@ unsigned char bleBuffer[10]; // 16bit flag, sint16 power , uint32 wheel_revoluti
 unsigned char slBuffer[1];
 unsigned char fBuffer[4];
 
+#define SLEEP_AFTER_MILLIS 180 * 1000  // deep sleep timer in milliseconds.
 
 
-#define PIN_LED 2            // onboard red LED ESP32WROOM
-#define PIN_WHEEL_SENSOR 13  // 3rd pin on BOOT btn side
+#define PIN_LED GPIO_NUM_2            // onboard red LED ESP32WROOM
+#define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; 3rd pin on BOOT btn side
 
 volatile unsigned long previousMillis = 0;
 volatile unsigned long lastMillis = 0;
 volatile unsigned long currentMillis = 0;
 
-volatile unsigned long time_prev_wheel = 0, time_now_wheel;
+volatile unsigned long time_prev_wheel = 0, time_now_wheel = millis();
 volatile unsigned long time_prev_crank = 0, time_now_crank;
 volatile unsigned long time_chat = 100;
 
@@ -152,6 +153,7 @@ void loop() {
       }
       else if (currentMillis - previousMillis >= 1000) {
         updateCSC("timer");
+        sleep_dog_timer();
       }
     }
     // when the central disconnects, turn off the LED:
@@ -159,6 +161,8 @@ void loop() {
     centralConnected = false;
     Serial.print("Disconnected from central: ");
     Serial.println(central.address());
+  } else {
+    sleep_dog_timer();
   }
 }
 
@@ -227,5 +231,28 @@ void updateCSC(String sType) {
   
   Serial.print("  ");
   Serial.println(sType);
+
+}
+
+void sleep_dog_timer() {
+  // check if we should put ourselfs into deepsleep..
+  // if time_now_wheel is more than SLEEP_AFTER_MILLIS milli seconds old.
+  if (millis() - time_now_wheel > SLEEP_AFTER_MILLIS) {
+    Serial.print("ENTERING DEEP SLEEP: millis(): ");
+    Serial.print(millis());
+    Serial.print(" -  time_now_wheel: ");
+    Serial.print(time_now_wheel);
+    Serial.print("; = ");
+    Serial.println(millis() - time_now_wheel);
+
+    Serial.print("Will wakeup on PIN: ");
+    Serial.println(PIN_WHEEL_SENSOR);
+
+    // prepare wakeup:
+    esp_sleep_enable_ext0_wakeup(PIN_WHEEL_SENSOR, !digitalRead(PIN_WHEEL_SENSOR));
+
+    // let's start deep sleep:
+    esp_deep_sleep_start();
+  }
 
 }
