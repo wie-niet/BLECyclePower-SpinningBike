@@ -1,29 +1,49 @@
-// my ESP board is an 2AC7Z-ESPWROOM32
-// This version working, but the power calculation may need some improvement.
-// the idea is ported from 'sketch_cycle_tst_cad_whl_apr30a.ino' using the Cycle Power BLE Service
 // 
 // This code creates a (virtual) BLE Power Sensor from a simple wheel sensor.
-// By using an fixed amount of energy per wheel revolution we calculate the Power in watts and broadcast them over BLE.
+// By using an fixed amount of energy per wheel revolution it calculates the Power in watts and broadcast it over BLE.
 // feel free to improve the calculations, this was good enough for me. ;-)
 //
 // This program will put the ESP32 into deep sleep mode when the wheel sensor is idle over 180 seconds (SLEEP_AFTER_MILLIS).
 // sensing any change on the wheel sensor will wake-up the ESP32 from deep sleep.
 //
-
+// ESP board is an 2AC7Z-ESPWROOM32
+// This version working, but the power calculation may need some improvement.
+// Some examples to get the BLE working were taken from:
+//  - https://hi-five.bz/cadencespeedsensor/ (I don't understand japanese but the code was useful).
+//  - https://teaandtechtime.com/arduino-ble-cycling-power-service/.
+//
+// source: https://github.com/wie-niet/BLECyclePower-SpinningBike
+//
 #include "Arduino.h"
 /* For the bluetooth funcionality */
 #include <ArduinoBLE.h>
 
+
+/*
+ * Settings:
+ */
+
 /* Device name which can be seen in BLE scanning software. */
 #define BLE_DEVICE_NAME               "Diederik's bike"
+
 /* Local name which should pop up when scanning for BLE devices. */
 #define BLE_LOCAL_NAME                "Cycle Power BLE"
 
-#define PIN_LED GPIO_NUM_2            // BLE pairing LED indicator; GPIO_NUM_2 is an onboard LED on my ESP32WROOM.
-#define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
-#define SLEEP_AFTER_MILLIS 180 * 1000 // deep sleep timer in milliseconds. Using 3 minutes.
+/* BLE pairing LED indicator  */
+#define PIN_LED GPIO_NUM_2            // GPIO_NUM_2 is an onboard LED on my ESP32WROOM
 
-/* better not change anything below here, unless you know what you're doing */
+/* GPIO INPUT + RTC for wakeup */
+#define PIN_WHEEL_SENSOR GPIO_NUM_13  // I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
+
+/* Deep sleep idle timeout in milliseconds */
+#define SLEEP_AFTER_MILLIS 180 * 1000 // 180 * 1000 = 3 minutes.
+
+/*
+ * better not change anything below here, unless you know what you're doing.
+ */
+
+
+
 
 BLEService CyclePowerService("1818");
 BLECharacteristic CyclePowerFeature("2A65", BLERead, 4);
