@@ -36,7 +36,7 @@ Change these values to what you need and you're good to go:
 #define PIN_LED GPIO_NUM_2            // GPIO_NUM_2 is an onboard LED on my ESP32WROOM
 
 /* GPIO INPUT + RTC for wakeup */
-#define PIN_WHEEL_SENSOR GPIO_NUM_13  // I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
+#define PIN_WHEEL_SENSOR GPIO_NUM_13  // I am using GPIO_NUM_13, 3rd pin on EN btn side.
 
 /* Deep sleep idle timeout in milliseconds */
 #define SLEEP_AFTER_MILLIS 180 * 1000 // 180 * 1000 = 3 minutes.
