@@ -8,7 +8,7 @@ Feel free to improve the calculations, this was working good enough for me. ;-)
 ![Breadboard schema ESP32:BLE Cycle Power with wheel sensor](doc/schema_bb.png)
 
 ### Hardware
-I've tested it on an ESP32 board (2AC7Z-ESPWROOM32)
+I've tested it on an ESP32 board (2AC7Z-ESPWROOM32) with an second hand Rambler spinning bike.
 
 ### Power Calculations
 This version working, but the power calculation may need some improvement.
@@ -29,3 +29,9 @@ Change these values to what you need and you're good to go:
 #define PIN_WHEEL_SENSOR GPIO_NUM_13  // RTC + INPUT; I am using GPIO_NUM_13, 3rd pin on BOOT btn side.
 #define SLEEP_AFTER_MILLIS 180 * 1000 // deep sleep timer in milliseconds. Using 3 minutes.
 ```
+
+
+### My Setup
+
+![My Rambler Bike with default wheel sensor, connected using a 3.5mm mini jack.](doc/my_rambler_bike.jpg)
+![Using MyWoosh, note: I have a seperate BLE cadense and heartrate monitor.](doc/using_MyWoosh.jpg)
