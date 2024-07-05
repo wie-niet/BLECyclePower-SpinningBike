@@ -1,5 +1,5 @@
 # BLE Cycle Power for any Stupid Spinning Bike
-ESP32 code to create an BLE Cycle Power sensor from a stupid spin bike with a wheel sensor, calculating fake/approximate power values.
+ESP32 arduino sketch to create an BLE Cycle Power sensor from a stupid spin bike with just a wheel sensor, using fake/approximate power calculations.
 
 This sketch creates a (virtual) BLE Power Sensor from a simple wheel sensor.
 By using an fixed amount of energy per wheel revolution we calculate the Power in watts and broadcast it over BLE.
