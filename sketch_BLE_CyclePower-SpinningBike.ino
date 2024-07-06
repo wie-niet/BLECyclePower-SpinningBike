@@ -77,6 +77,59 @@ byte sensorlocation = 0x0D;
 
 boolean centralConnected = false;
 
+/*
+ * UI LED using LEDC:
+ *
+ * ui_led_setup()  -> init LEDC
+ * ui_led_off()    -> led off    - BLE is not ready
+ * ui_led_blink()  -> blink led  - BLE is ready to be paired
+ * ui_led_paired() -> on showing - BLE is connected
+ */
+#define USE_LEDC // comment to use GPIO OUPUT instead of LEDC
+#define LEDC_PWM_CHANNEL 0
+#define LEDC_PWM_FREQ 1
+#define LEDC_PWM_RESOLUTION 14
+#define LEDC_PWM_DUTY_OFF 0
+#define LEDC_PWM_DUTY_BLINK 256
+#define LEDC_PWM_DUTY_FULL 16384
+
+void ui_led_setup() {
+  #ifdef USE_LEDC
+    Serial.println("USE_LEDC is defined, using LEDC PWM");
+    ledcAttachPin(PIN_LED, LEDC_PWM_CHANNEL);
+    ledcSetup(LEDC_PWM_CHANNEL, LEDC_PWM_FREQ, LEDC_PWM_RESOLUTION);
+  #else
+    Serial.println("USE_LEDC is not defined, using GPIO OUTPUT");
+    pinMode(PIN_LED, OUTPUT);
+  #endif
+}
+
+void ui_led_off() {
+  #ifdef USE_LEDC
+    ledcWrite(LEDC_PWM_CHANNEL, LEDC_PWM_DUTY_OFF);
+  #else
+    digitalWrite(PIN_LED, LOW);
+  #endif
+}
+
+void ui_led_scanning() {
+  #ifdef USE_LEDC
+    ledcWrite(LEDC_PWM_CHANNEL, LEDC_PWM_DUTY_BLINK);
+  #else
+    digitalWrite(PIN_LED, LOW);
+  #endif
+}
+
+void ui_led_paired() {
+  #ifdef USE_LEDC
+    ledcWrite(LEDC_PWM_CHANNEL, LEDC_PWM_DUTY_FULL);
+  #else
+    digitalWrite(PIN_LED, HIGH);
+  #endif
+}
+
+
+
 void setup() {
   Serial.begin(9600);       // initialize serial communication
   while(!Serial);
@@ -112,8 +165,8 @@ void setup() {
   }
 
   Serial.println("App Start");
-  pinMode(PIN_LED, OUTPUT);      // initialize the LED on pin PIN_LED to indicate when a central is connected
-  
+  ui_led_setup();
+  ui_led_off();
   lastWheeltime = millis();
 
   const unsigned char bleBuffer[10] = {
@@ -134,6 +187,7 @@ void setup() {
   CyclePowerMeasurement.writeValue(bleBuffer, 10);
   CyclePowerSensorLocation.writeValue(slBuffer, 1);
 
+  ui_led_scanning();
   Serial.println("Bluetooth device active, waiting for connections...");
 
   attachInterrupt(digitalPinToInterrupt(PIN_WHEEL_SENSOR), wheelAdd, RISING); // RISING FALLING CHANGE LOW 
@@ -162,7 +216,7 @@ void loop() {
     // print the central's MAC address:
     Serial.println(central.address());
     // turn on the LED to indicate the connection:
-    digitalWrite(PIN_LED, HIGH);
+    ui_led_paired();
 
     // check the csc mesurement every 200ms
     while (central.connected()) {
@@ -177,8 +231,9 @@ void loop() {
         sleep_dog_timer();
       }
     }
-    // when the central disconnects, turn off the LED:
-    digitalWrite(PIN_LED, LOW);
+    // when the central disconnects, blink or turn off the LED:
+    ui_led_scanning();
+
     centralConnected = false;
     Serial.print("Disconnected from central: ");
     Serial.println(central.address());
